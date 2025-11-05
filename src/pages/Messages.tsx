@@ -12,15 +12,15 @@ const Messages = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "sent":
-        return "bg-blue-100 text-blue-700 border-blue-200";
+        return "bg-blue-500/10 text-blue-500 border-blue-500/20";
       case "delivered":
-        return "bg-green-100 text-green-700 border-green-200";
+        return "bg-green-500/10 text-green-500 border-green-500/20";
       case "read":
-        return "bg-purple-100 text-purple-700 border-purple-200";
+        return "bg-purple-500/10 text-purple-500 border-purple-500/20";
       case "failed":
-        return "bg-red-100 text-red-700 border-red-200";
+        return "bg-red-500/10 text-red-500 border-red-500/20";
       default:
-        return "bg-gray-100 text-gray-700 border-gray-200";
+        return "bg-gray-500/10 text-gray-500 border-gray-500/20";
     }
   };
 
@@ -36,23 +36,15 @@ const Messages = () => {
 
   return (
     <Layout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="animate-fade-in">
-          <h1 className="text-3xl font-bold tracking-tight">Mensajes de WhatsApp</h1>
-          <p className="text-muted-foreground">
-            Visualiza todas las conversaciones en tiempo real
-          </p>
-        </div>
-
+      <div className="space-y-6 p-6">
         {/* Info Card */}
-        <Card className="border-primary/20 bg-primary/5 animate-fade-in">
+        <Card className="border-primary/20 bg-primary/5">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Phone className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-foreground">
+              <Phone className="h-5 w-5 text-primary" />
               Integración con N8N
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-muted-foreground">
               Los mensajes se sincronizan automáticamente desde tus workflows de N8N.
               Configura tus webhooks en la sección de administración.
             </CardDescription>
@@ -63,14 +55,14 @@ const Messages = () => {
         {isLoading ? (
           <div className="space-y-4">
             {[1, 2, 3, 4].map((i) => (
-              <Skeleton key={i} className="h-24 w-full" />
+              <Skeleton key={i} className="h-24 w-full bg-card" />
             ))}
           </div>
         ) : messages && messages.length > 0 ? (
-          <Card className="animate-fade-in">
+          <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle>Historial de Mensajes</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-foreground">Historial de Mensajes</CardTitle>
+              <CardDescription className="text-muted-foreground">
                 {messages.length} mensaje{messages.length !== 1 ? "s" : ""} en total
               </CardDescription>
             </CardHeader>
@@ -80,17 +72,17 @@ const Messages = () => {
                   {messages.map((message) => (
                     <div
                       key={message.id}
-                      className="flex gap-4 rounded-lg border p-4 transition-colors hover:bg-accent"
+                      className="flex gap-4 rounded-lg border border-border bg-card p-4 transition-colors hover:bg-muted/50"
                     >
                       <div className="flex-shrink-0">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100">
-                          <MessageSquare className="h-5 w-5 text-green-600" />
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-500/10">
+                          <MessageSquare className="h-5 w-5 text-green-500" />
                         </div>
                       </div>
                       <div className="flex-1 space-y-2">
                         <div className="flex items-start justify-between">
                           <div>
-                            <p className="font-medium">
+                            <p className="font-medium text-foreground">
                               De: {message.from_number}
                             </p>
                             <p className="text-sm text-muted-foreground">
@@ -101,11 +93,11 @@ const Messages = () => {
                             {getStatusLabel(message.status)}
                           </Badge>
                         </div>
-                        <p className="text-sm">{message.message_content}</p>
+                        <p className="text-sm text-foreground">{message.message_content}</p>
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <Clock className="h-3 w-3" />
                           {new Date(message.created_at).toLocaleString("es-ES")}
-                          <Badge variant="secondary" className="ml-2">
+                          <Badge variant="secondary" className="ml-2 bg-secondary text-secondary-foreground">
                             {message.message_type}
                           </Badge>
                         </div>
@@ -117,10 +109,10 @@ const Messages = () => {
             </CardContent>
           </Card>
         ) : (
-          <Card className="animate-fade-in">
+          <Card className="bg-card border-border">
             <CardContent className="py-12 text-center">
               <MessageSquare className="mx-auto h-12 w-12 text-muted-foreground" />
-              <h3 className="mt-4 text-lg font-semibold">No hay mensajes</h3>
+              <h3 className="mt-4 text-lg font-semibold text-foreground">No hay mensajes</h3>
               <p className="text-sm text-muted-foreground">
                 Los mensajes aparecerán aquí cuando se reciban desde N8N
               </p>
