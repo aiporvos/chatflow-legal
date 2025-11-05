@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { GenerateDocumentDialog } from "@/components/documents/GenerateDocumentDialog";
+import { QueryRagDialog } from "@/components/documents/QueryRagDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Documents = () => {
@@ -33,6 +34,7 @@ const Documents = () => {
             </p>
           </div>
           <div className="flex gap-2">
+            <QueryRagDialog />
             <GenerateDocumentDialog />
             <UploadDocumentDialog />
           </div>
