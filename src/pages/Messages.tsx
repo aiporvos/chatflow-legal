@@ -17,11 +17,11 @@ const Messages = () => {
   const [isSending, setIsSending] = useState(false);
 
   const handleSendMessage = async () => {
-    const webhookUrl = localStorage.getItem("n8n_whatsapp_webhook");
+    const webhookUrl = localStorage.getItem("n8n_whatsapp_outgoing_webhook");
     if (!webhookUrl) {
       toast({
         title: "Error de configuración",
-        description: "Configura el webhook de WhatsApp en Configuración",
+        description: "Configura el webhook de WhatsApp (Saliente) en Configuración",
         variant: "destructive",
       });
       return;

@@ -15,7 +15,8 @@ const Settings = () => {
     baseUrl: localStorage.getItem("n8n_base_url") || "",
     casesWebhook: localStorage.getItem("n8n_cases_webhook") || "",
     documentsWebhook: localStorage.getItem("n8n_documents_webhook") || "",
-    whatsappWebhook: localStorage.getItem("n8n_whatsapp_webhook") || "",
+    whatsappIncomingWebhook: localStorage.getItem("n8n_whatsapp_incoming_webhook") || "",
+    whatsappOutgoingWebhook: localStorage.getItem("n8n_whatsapp_outgoing_webhook") || "",
     emailWebhook: localStorage.getItem("n8n_email_webhook") || "",
     calendarWebhook: localStorage.getItem("n8n_calendar_webhook") || "",
     scanDocumentWebhook: localStorage.getItem("n8n_scan_document_webhook") || "",
@@ -174,21 +175,39 @@ const Settings = () => {
                   </p>
                 </div>
 
-                {/* WhatsApp */}
+                {/* WhatsApp Incoming */}
                 <div className="space-y-2">
-                  <Label htmlFor="whatsappWebhook" className="text-foreground flex items-center gap-2">
+                  <Label htmlFor="whatsappIncomingWebhook" className="text-foreground flex items-center gap-2">
                     <MessageSquare className="h-4 w-4 text-green-500" />
-                    Webhook de WhatsApp
+                    Webhook de WhatsApp (Entrante)
                   </Label>
                   <Input
-                    id="whatsappWebhook"
-                    placeholder="/webhook/whatsapp"
-                    value={n8nConfig.whatsappWebhook}
-                    onChange={(e) => setN8nConfig({ ...n8nConfig, whatsappWebhook: e.target.value })}
+                    id="whatsappIncomingWebhook"
+                    placeholder="/webhook/whatsapp-incoming"
+                    value={n8nConfig.whatsappIncomingWebhook}
+                    onChange={(e) => setN8nConfig({ ...n8nConfig, whatsappIncomingWebhook: e.target.value })}
                     className="bg-background border-border"
                   />
                   <p className="text-xs text-muted-foreground">
-                    Se usa en: Chat de WhatsApp - Enviar y recibir mensajes
+                    Se usa en: Recibir mensajes desde WhatsApp → Edge Function → Base de datos
+                  </p>
+                </div>
+
+                {/* WhatsApp Outgoing */}
+                <div className="space-y-2">
+                  <Label htmlFor="whatsappOutgoingWebhook" className="text-foreground flex items-center gap-2">
+                    <MessageSquare className="h-4 w-4 text-green-500" />
+                    Webhook de WhatsApp (Saliente)
+                  </Label>
+                  <Input
+                    id="whatsappOutgoingWebhook"
+                    placeholder="/webhook/whatsapp-outgoing"
+                    value={n8nConfig.whatsappOutgoingWebhook}
+                    onChange={(e) => setN8nConfig({ ...n8nConfig, whatsappOutgoingWebhook: e.target.value })}
+                    className="bg-background border-border"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Se usa en: Enviar mensajes desde la app → N8N → WhatsApp
                   </p>
                 </div>
 
