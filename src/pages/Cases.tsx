@@ -1,12 +1,14 @@
 import { Layout } from "@/components/Layout";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCases } from "@/hooks/useCases";
-import { Plus, Search, FolderOpen } from "lucide-react";
+import { Search, FolderOpen } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { CreateCaseDialog } from "@/components/cases/CreateCaseDialog";
+import { EditCaseDialog } from "@/components/cases/EditCaseDialog";
+import { DeleteCaseDialog } from "@/components/cases/DeleteCaseDialog";
 
 const Cases = () => {
   const { data: cases, isLoading } = useCases();
@@ -57,10 +59,7 @@ const Cases = () => {
               Gestiona todos los expedientes legales
             </p>
           </div>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Nuevo Expediente
-          </Button>
+          <CreateCaseDialog />
         </div>
 
         {/* Search */}
@@ -82,7 +81,7 @@ const Cases = () => {
         {isLoading ? (
           <div className="grid gap-4">
             {[1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-32 w-full" />
+              <Skeleton key={i} className="h-40 w-full" />
             ))}
           </div>
         ) : filteredCases && filteredCases.length > 0 ? (
@@ -91,7 +90,7 @@ const Cases = () => {
               <Card key={case_.id} className="hover-scale transition-all">
                 <CardHeader>
                   <div className="flex items-start justify-between">
-                    <div className="space-y-1">
+                    <div className="space-y-1 flex-1">
                       <CardTitle className="flex items-center gap-2">
                         <FolderOpen className="h-5 w-5 text-primary" />
                         {case_.title}
@@ -100,13 +99,15 @@ const Cases = () => {
                         Expediente: {case_.case_number}
                       </CardDescription>
                     </div>
-                    <Badge variant="outline" className={getStatusColor(case_.status)}>
-                      {getStatusLabel(case_.status)}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className={getStatusColor(case_.status)}>
+                        {getStatusLabel(case_.status)}
+                      </Badge>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2">
+                  <div className="space-y-4">
                     {case_.description && (
                       <p className="text-sm text-muted-foreground">
                         {case_.description}
@@ -116,21 +117,29 @@ const Cases = () => {
                       <div>
                         <span className="font-medium">Cliente:</span>{" "}
                         <span className="text-muted-foreground">
-                          {case_.client?.full_name || "No asignado"}
+                          {case_.client?.full_name || case_.client?.email || "No asignado"}
                         </span>
                       </div>
                       <div>
                         <span className="font-medium">Abogado:</span>{" "}
                         <span className="text-muted-foreground">
-                          {case_.lawyer?.full_name || "No asignado"}
+                          {case_.lawyer?.full_name || case_.lawyer?.email || "No asignado"}
                         </span>
                       </div>
                       <div>
                         <span className="font-medium">Creado:</span>{" "}
                         <span className="text-muted-foreground">
-                          {new Date(case_.created_at).toLocaleDateString()}
+                          {new Date(case_.created_at).toLocaleDateString("es-ES")}
                         </span>
                       </div>
+                    </div>
+                    <div className="flex justify-end gap-2 pt-2 border-t">
+                      <EditCaseDialog case_={case_} />
+                      <DeleteCaseDialog
+                        caseId={case_.id}
+                        caseTitle={case_.title}
+                        caseNumber={case_.case_number}
+                      />
                     </div>
                   </div>
                 </CardContent>
@@ -142,11 +151,12 @@ const Cases = () => {
             <CardContent className="py-12 text-center">
               <FolderOpen className="mx-auto h-12 w-12 text-muted-foreground" />
               <h3 className="mt-4 text-lg font-semibold">No se encontraron expedientes</h3>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground mb-4">
                 {search
                   ? "Intenta con otra búsqueda"
                   : "Comienza creando un nuevo expediente"}
               </p>
+              {!search && <CreateCaseDialog />}
             </CardContent>
           </Card>
         )}
