@@ -6,6 +6,7 @@ import { Shield, Webhook, Database, CheckCircle2, XCircle, Clock, TrendingUp, Ac
 import { useWebhooks } from "@/hooks/useWebhooks";
 import { CreateWebhookDialog } from "@/components/admin/CreateWebhookDialog";
 import { WebhookCard } from "@/components/admin/WebhookCard";
+import { GenerateTestData } from "@/components/admin/GenerateTestData";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Navigate } from "react-router-dom";
 import { useCases } from "@/hooks/useCases";
@@ -83,7 +84,10 @@ const Admin = () => {
               Gestiona webhooks de N8N y monitorea el estado del sistema
             </p>
           </div>
-          <CreateWebhookDialog />
+          <div className="flex gap-2">
+            <GenerateTestData />
+            <CreateWebhookDialog />
+          </div>
         </div>
 
         {/* Stats Cards */}
