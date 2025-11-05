@@ -5,12 +5,12 @@ import type { Database } from './types';
 // Support both build-time and runtime environment variables
 // @ts-ignore - window.__ENV__ is injected at runtime by Docker
 const getEnvVar = (key: string) => {
-  // @ts-ignore
-  if (typeof window !== 'undefined' && window.__ENV__) {
+  // @ts-ignore - Check if runtime env exists AND has actual values
+  if (typeof window !== 'undefined' && window.__ENV__ && window.__ENV__[key]) {
     // @ts-ignore
     return window.__ENV__[key];
   }
-  // Fallback to build-time env vars
+  // Fallback to build-time env vars (Lovable Cloud)
   return import.meta.env[key];
 };
 
