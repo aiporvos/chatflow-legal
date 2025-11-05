@@ -37,8 +37,7 @@ git --version
 
 - [ ] Cuenta en Supabase (https://supabase.com)
 - [ ] Cuenta en N8N (https://n8n.io) o N8N self-hosted
-- [ ] Cuenta en Google Cloud (para Google Drive)
-- [ ] Cuenta en Lovable (para API Key de IA)
+- [ ] Cuenta en Google Cloud (para Google Drive, opcional)
 
 ---
 
@@ -149,12 +148,9 @@ ON CONFLICT (user_id, role) DO NOTHING;
 
 ## 4. Deploy Edge Functions
 
-### 4.1 Configurar secrets
+### 4.1 No se requieren secrets
 
-```bash
-# LOVABLE_API_KEY - Obtén tu API key de Lovable
-supabase secrets set LOVABLE_API_KEY=tu_api_key_aqui
-```
+Las edge functions solo usan las variables automáticas de Supabase (SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY) que ya están configuradas.
 
 ### 4.2 Deploy funciones
 
@@ -326,6 +322,7 @@ http://localhost:5173
 
 ```bash
 # Enviar mensaje de prueba al webhook
+# IMPORTANTE: Ahora debes incluir case_id explícitamente
 curl -X POST https://xxxxxxxxxxxxx.supabase.co/functions/v1/n8n-whatsapp-webhook \
   -H "Content-Type: application/json" \
   -d '{
@@ -333,10 +330,13 @@ curl -X POST https://xxxxxxxxxxxxx.supabase.co/functions/v1/n8n-whatsapp-webhook
     "chat_id": "test-chat",
     "from_number": "5491234567890",
     "to_number": "5499876543210",
-    "message_content": "Hola, consulta sobre el caso CASE-001",
-    "message_type": "text"
+    "message_content": "Hola, consulta sobre el caso",
+    "message_type": "text",
+    "case_id": "UUID_DEL_CASO"
   }'
 ```
+
+**Nota**: La auto-vinculación con IA fue eliminada para reducir consumo. Ahora debes enviar el `case_id` explícitamente desde N8N.
 
 ---
 

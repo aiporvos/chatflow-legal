@@ -38,12 +38,9 @@ verify_jwt = false
 
 ## Secrets Requeridos
 
-Configura estos secrets en tu proyecto de Supabase:
+No se requieren secrets adicionales. Las funciones solo usan:
 
 ```bash
-# Lovable AI API Key (para auto-linking de mensajes WhatsApp)
-supabase secrets set LOVABLE_API_KEY=tu_api_key_aqui
-
 # Variables automáticas de Supabase (ya configuradas)
 # SUPABASE_URL
 # SUPABASE_SERVICE_ROLE_KEY
@@ -394,7 +391,7 @@ serve(async (req) => {
 
 **Ruta:** `supabase/functions/n8n-whatsapp-webhook/index.ts`
 
-**Descripción:** Webhook para recibir mensajes de WhatsApp con auto-vinculación a casos usando IA.
+**Descripción:** Webhook para recibir mensajes de WhatsApp. El case_id debe venir en el payload.
 
 ```typescript
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
@@ -426,65 +423,8 @@ serve(async (req) => {
       );
     }
 
-    // Vincular automáticamente con expediente si no viene especificado
-    let linkedCaseId = payload.case_id;
-    
-    if (!linkedCaseId && payload.message_content) {
-      console.log("Attempting to auto-link message to case...");
-      
-      // Obtener todos los expedientes activos
-      const { data: cases } = await supabase
-        .from("cases")
-        .select("id, case_number, title, description, status")
-        .neq("status", "closed");
-      
-      if (cases && cases.length > 0) {
-        // Usar Lovable AI para analizar el mensaje
-        const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
-        const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${lovableApiKey}`,
-          },
-          body: JSON.stringify({
-            model: "google/gemini-2.5-flash",
-            messages: [
-              {
-                role: "system",
-                content: `Eres un asistente que analiza mensajes de WhatsApp y determina si se refieren a algún expediente legal específico. 
-                
-Expedientes disponibles:
-${cases.map(c => `- ID: ${c.id}, Número: ${c.case_number}, Título: ${c.title}, Estado: ${c.status}`).join('\n')}
-
-Si el mensaje menciona un número de expediente, título, o parece relacionado con algún caso, responde SOLO con el ID del expediente (UUID).
-Si no hay coincidencia clara, responde con "NONE".
-NO des explicaciones, solo el ID o "NONE".`
-              },
-              {
-                role: "user",
-                content: `Mensaje: "${payload.message_content}"`
-              }
-            ],
-            temperature: 0.3,
-          }),
-        });
-
-        if (aiResponse.ok) {
-          const aiData = await aiResponse.json();
-          const suggestedCaseId = aiData.choices[0]?.message?.content?.trim();
-          
-          if (suggestedCaseId && suggestedCaseId !== "NONE") {
-            // Verificar que el ID existe
-            const matchedCase = cases.find(c => c.id === suggestedCaseId);
-            if (matchedCase) {
-              linkedCaseId = suggestedCaseId;
-              console.log(`Message auto-linked to case: ${matchedCase.case_number}`);
-            }
-          }
-        }
-      }
-    }
+    // El case_id debe venir en el payload desde N8N
+    const linkedCaseId = payload.case_id || null;
 
     // Insertar o actualizar el mensaje
     const { data, error } = await supabase
