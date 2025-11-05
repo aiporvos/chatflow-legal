@@ -2,8 +2,20 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+// Support both build-time and runtime environment variables
+// @ts-ignore - window.__ENV__ is injected at runtime by Docker
+const getEnvVar = (key: string) => {
+  // @ts-ignore
+  if (typeof window !== 'undefined' && window.__ENV__) {
+    // @ts-ignore
+    return window.__ENV__[key];
+  }
+  // Fallback to build-time env vars
+  return import.meta.env[key];
+};
+
+const SUPABASE_URL = getEnvVar('VITE_SUPABASE_URL');
+const SUPABASE_PUBLISHABLE_KEY = getEnvVar('VITE_SUPABASE_PUBLISHABLE_KEY');
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";

@@ -1,73 +1,238 @@
-# Welcome to your Lovable project
+# Sistema Legal - Gestión de Casos Legales
 
-## Project info
+Sistema completo de gestión legal con integración a Supabase, N8N, Google Drive y WhatsApp.
 
-**URL**: https://lovable.dev/projects/9b65f2c6-015a-4b5a-95ce-103eb26c6dc6
+---
 
-## How can I edit this code?
+## 🚀 Deployment Rápido con Docker
 
-There are several ways of editing your application.
+### Prerequisitos
 
-**Use Lovable**
+- Docker instalado
+- Cuenta en Dokploy (o servidor con Dokploy)
+- Proyecto de Supabase (tu propia instancia)
+- Repositorio Git
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/9b65f2c6-015a-4b5a-95ce-103eb26c6dc6) and start prompting.
+### Pasos Rápidos
 
-Changes made via Lovable will be committed automatically to this repo.
+1. **Fork o clona este repositorio**
 
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```bash
+git clone https://github.com/tu-usuario/sistema-legal.git
+cd sistema-legal
 ```
 
-**Edit a file directly in GitHub**
+2. **Configura Dokploy**
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+- Conecta tu repositorio GitHub
+- Configura variables de entorno:
+  - `VITE_SUPABASE_URL`
+  - `VITE_SUPABASE_PUBLISHABLE_KEY`
+  - `VITE_SUPABASE_PROJECT_ID`
 
-**Use GitHub Codespaces**
+3. **Deploy**
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Dokploy detectará el `Dockerfile` y desplegará automáticamente.
 
-## What technologies are used for this project?
+**📚 Ver guía completa:** [DOCKER_DEPLOYMENT.md](./docs/DOCKER_DEPLOYMENT.md)
 
-This project is built with:
+---
 
+## 🧪 Testing Local
+
+```bash
+# 1. Copia las variables de entorno
+cp .env.example .env
+
+# 2. Edita .env con tus credenciales de Supabase
+nano .env
+
+# 3. Inicia con Docker Compose
+docker-compose up -d
+
+# 4. Abre en navegador
+open http://localhost:3000
+```
+
+---
+
+## 📁 Estructura del Proyecto
+
+```
+.
+├── Dockerfile              # Configuración Docker
+├── docker-compose.yml      # Para testing local
+├── nginx.conf             # Configuración Nginx
+├── docker-entrypoint.sh   # Script de inicio
+├── src/                   # Código fuente React
+├── docs/                  # Documentación completa
+│   ├── DOCKER_DEPLOYMENT.md    # ⭐ Guía Docker + Dokploy
+│   ├── DATABASE_MIGRATION.md   # Scripts SQL
+│   ├── EDGE_FUNCTIONS.md       # Edge Functions
+│   ├── DEPLOYMENT_GUIDE.md     # Guía manual
+│   └── README.md              # Índice
+└── supabase/
+    └── functions/         # Edge Functions
+```
+
+---
+
+## 📚 Documentación Completa
+
+Toda la documentación está en `/docs`:
+
+- **[DOCKER_DEPLOYMENT.md](./docs/DOCKER_DEPLOYMENT.md)** - Deployment con Docker (RECOMENDADO)
+- **[DATABASE_MIGRATION.md](./docs/DATABASE_MIGRATION.md)** - Scripts SQL completos
+- **[EDGE_FUNCTIONS.md](./docs/EDGE_FUNCTIONS.md)** - Código de Edge Functions
+- **[DEPLOYMENT_GUIDE.md](./docs/DEPLOYMENT_GUIDE.md)** - Guía paso a paso manual
+- **[CAMBIOS_CONSUMO.md](./docs/CAMBIOS_CONSUMO.md)** - Optimizaciones realizadas
+
+---
+
+## 🔧 Stack Tecnológico
+
+### Frontend
+- React 18 + TypeScript
 - Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- TanStack Query
+- Tailwind CSS + shadcn/ui
 
-## How can I deploy this project?
+### Backend
+- Supabase (PostgreSQL + Auth + Edge Functions)
+- N8N (Automation)
+- Google Drive (Storage)
+- WhatsApp (Messaging)
 
-Simply open [Lovable](https://lovable.dev/projects/9b65f2c6-015a-4b5a-95ce-103eb26c6dc6) and click on Share -> Publish.
+---
 
-## Can I connect a custom domain to my Lovable project?
+## 🔐 Variables de Entorno
 
-Yes, you can!
+Las variables se configuran en Dokploy (no en el código):
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+```bash
+VITE_SUPABASE_URL=https://xxxxx.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=eyJhbGciOiJI...
+VITE_SUPABASE_PROJECT_ID=xxxxx
+```
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+---
+
+## ✨ Features
+
+- ✅ Gestión de casos legales
+- ✅ Sistema de usuarios y roles (Admin, Lawyer, Client)
+- ✅ Subida de documentos a Google Drive
+- ✅ Integración con WhatsApp
+- ✅ RAG (Retrieval-Augmented Generation) para consultas
+- ✅ Calendario de eventos
+- ✅ Sistema de contactos
+- ✅ Webhooks N8N configurables
+
+---
+
+## 🐳 Características Docker
+
+- ✅ Multi-stage build (optimizado)
+- ✅ Variables de entorno en runtime (no en build)
+- ✅ Nginx como servidor web
+- ✅ Health check endpoint
+- ✅ Gzip compression
+- ✅ Cache de assets
+- ✅ SPA routing
+
+---
+
+## 🚀 Desplegar en Producción
+
+### Con Dokploy (Recomendado)
+
+1. Conecta tu repo GitHub a Dokploy
+2. Configura variables de entorno
+3. Deploy automático en cada push
+
+**Ver guía:** [DOCKER_DEPLOYMENT.md](./docs/DOCKER_DEPLOYMENT.md)
+
+### Manual
+
+Ver: [DEPLOYMENT_GUIDE.md](./docs/DEPLOYMENT_GUIDE.md)
+
+---
+
+## 🛠️ Desarrollo
+
+```bash
+# Instalar dependencias
+npm install
+
+# Desarrollo
+npm run dev
+
+# Build
+npm run build
+
+# Preview
+npm run preview
+```
+
+---
+
+## 📊 Database Schema
+
+Ver esquema completo en: [DATABASE_MIGRATION.md](./docs/DATABASE_MIGRATION.md)
+
+Tablas principales:
+- `profiles` - Perfiles de usuarios
+- `user_roles` - Roles (admin, lawyer, client)
+- `cases` - Expedientes legales
+- `documents` - Documentos
+- `whatsapp_messages` - Mensajes WhatsApp
+- `n8n_webhooks` - Configuración webhooks
+
+---
+
+## 🔒 Seguridad
+
+- ✅ Row Level Security (RLS) en todas las tablas
+- ✅ Roles y permisos granulares
+- ✅ Variables de entorno en runtime
+- ✅ HTTPS automático con Dokploy
+- ✅ Sin secrets en el código
+
+---
+
+## 📈 Optimizaciones
+
+El sistema está optimizado para **mínimo consumo**:
+
+- ❌ 0 suscripciones realtime
+- ❌ 0 llamadas a IA automáticas
+- ✅ Solo consultas cuando el usuario interactúa
+
+Ver: [CAMBIOS_CONSUMO.md](./docs/CAMBIOS_CONSUMO.md)
+
+---
+
+## 🐛 Troubleshooting
+
+Ver [DOCKER_DEPLOYMENT.md](./docs/DOCKER_DEPLOYMENT.md#troubleshooting) para soluciones a problemas comunes.
+
+---
+
+## 📝 Licencia
+
+MIT
+
+---
+
+## 🙏 Créditos
+
+Construido con:
+- [React](https://react.dev/)
+- [Supabase](https://supabase.com/)
+- [N8N](https://n8n.io/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [shadcn/ui](https://ui.shadcn.com/)
+
+---
+
+**Hecho con ❤️ para la gestión legal eficiente**

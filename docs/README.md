@@ -4,7 +4,7 @@ Documentación completa para implementar el sistema desde cero.
 
 ---
 
-## 📚 Índice de Documentación
+## 📋 Índice de Documentación
 
 ### 1. [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)
 **Guía paso a paso completa desde cero**
@@ -21,7 +21,20 @@ Documentación completa para implementar el sistema desde cero.
 
 ---
 
-### 2. [DATABASE_MIGRATION.md](./DATABASE_MIGRATION.md)
+### 2. [DOCKER_DEPLOYMENT.md](./DOCKER_DEPLOYMENT.md) ⭐ NUEVO
+**Deployment con Docker y Dokploy**
+- Dockerfile completo listo para producción
+- Configuración de Dokploy
+- Variables de entorno en runtime
+- Testing local con Docker Compose
+- Troubleshooting Docker
+- Auto-deploy desde GitHub
+
+**Usa esto para desplegar en tu propio servidor con Dokploy.**
+
+---
+
+### 3. [DATABASE_MIGRATION.md](./DATABASE_MIGRATION.md)
 **Todos los scripts SQL necesarios**
 - Tipos Enum
 - Funciones de base de datos
@@ -34,7 +47,7 @@ Documentación completa para implementar el sistema desde cero.
 
 ---
 
-### 3. [EDGE_FUNCTIONS.md](./EDGE_FUNCTIONS.md)
+### 4. [EDGE_FUNCTIONS.md](./EDGE_FUNCTIONS.md)
 **Código completo de todas las Edge Functions**
 - `query-rag` - Consultas RAG
 - `upload-to-drive` - Subir archivos a Google Drive
@@ -46,7 +59,7 @@ Documentación completa para implementar el sistema desde cero.
 
 ---
 
-### 4. [CAMBIOS_CONSUMO.md](./CAMBIOS_CONSUMO.md)
+### 5. [CAMBIOS_CONSUMO.md](./CAMBIOS_CONSUMO.md)
 **Optimización de recursos y consumo**
 - Suscripciones realtime eliminadas
 - Auto-vinculación con IA eliminada
@@ -60,7 +73,14 @@ Documentación completa para implementar el sistema desde cero.
 
 ## 🚀 Inicio Rápido
 
-### Para implementar desde cero:
+### Para desplegar con Docker (RECOMENDADO):
+
+1. **Leer** [DOCKER_DEPLOYMENT.md](./DOCKER_DEPLOYMENT.md)
+2. **Configurar** Dokploy con tu repositorio GitHub
+3. **Configurar** variables de entorno de Supabase
+4. **Deploy** automático desde GitHub
+
+### Para implementar desde cero (sin Docker):
 
 1. **Leer** [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) completo
 2. **Ejecutar** los SQL de [DATABASE_MIGRATION.md](./DATABASE_MIGRATION.md)
