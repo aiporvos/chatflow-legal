@@ -34,7 +34,7 @@ export const AppSidebar = () => {
     { icon: FolderOpen, label: "Expedientes", path: "/cases", count: activeCases },
     { icon: FileText, label: "Documentos", path: "/documents", count: documents || 234 },
     { icon: ScaleIcon, label: "RAG Jurídico", path: "/rag", badge: "Pro", badgeColor: "bg-purple-500" },
-    { icon: Mail, label: "Correos", path: "/mail", count: 12 },
+    { icon: Mail, label: "Correos", path: "/emails", count: 12 },
     { icon: Calendar, label: "Agenda", path: "/calendar" },
     { icon: MessageSquare, label: "WhatsApp", path: "/messages", count: messagesCount },
     { icon: BarChart3, label: "Analytics", path: "/analytics" },

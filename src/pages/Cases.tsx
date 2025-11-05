@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { CreateCaseDialog } from "@/components/cases/CreateCaseDialog";
 import { EditCaseDialog } from "@/components/cases/EditCaseDialog";
 import { DeleteCaseDialog } from "@/components/cases/DeleteCaseDialog";
+import { ScanCaseDialog } from "@/components/cases/ScanCaseDialog";
 
 const Cases = () => {
   const { data: cases, isLoading } = useCases();
@@ -62,7 +63,10 @@ const Cases = () => {
               className="pl-10 bg-card border-border"
             />
           </div>
-          <CreateCaseDialog />
+          <div className="flex gap-2">
+            <ScanCaseDialog />
+            <CreateCaseDialog />
+          </div>
         </div>
 
         {/* Cases List */}

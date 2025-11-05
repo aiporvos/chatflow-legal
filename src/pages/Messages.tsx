@@ -1,13 +1,62 @@
 import { Layout } from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useWhatsAppMessages } from "@/hooks/useWhatsAppMessages";
-import { MessageSquare, Phone, Clock } from "lucide-react";
+import { MessageSquare, Phone, Clock, Send } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 const Messages = () => {
   const { data: messages, isLoading } = useWhatsAppMessages();
+  const { toast } = useToast();
+  const [newMessage, setNewMessage] = useState({ to: "", content: "" });
+  const [isSending, setIsSending] = useState(false);
+
+  const handleSendMessage = async () => {
+    const webhookUrl = localStorage.getItem("n8n_whatsapp_webhook");
+    if (!webhookUrl) {
+      toast({
+        title: "Error de configuración",
+        description: "Configura el webhook de WhatsApp en Configuración",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSending(true);
+    try {
+      const response = await fetch(`${localStorage.getItem("n8n_base_url")}${webhookUrl}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "send",
+          to_number: newMessage.to,
+          message_content: newMessage.content,
+          message_type: "text",
+        }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Mensaje enviado",
+          description: "Tu mensaje ha sido enviado",
+        });
+        setNewMessage({ to: "", content: "" });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo enviar el mensaje",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSending(false);
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -37,18 +86,48 @@ const Messages = () => {
   return (
     <Layout>
       <div className="space-y-6 p-6">
-        {/* Info Card */}
-        <Card className="border-primary/20 bg-primary/5">
+        {/* Send Message Card */}
+        <Card className="border-green-500/20 bg-green-500/5">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-foreground">
-              <Phone className="h-5 w-5 text-primary" />
-              Integración con N8N
+              <MessageSquare className="h-5 w-5 text-green-500" />
+              Enviar Mensaje de WhatsApp
             </CardTitle>
             <CardDescription className="text-muted-foreground">
-              Los mensajes se sincronizan automáticamente desde tus workflows de N8N.
-              Configura tus webhooks en la sección de administración.
+              Los mensajes se procesan y envían a través de N8N
             </CardDescription>
           </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex gap-2">
+              <Input
+                placeholder="Número de teléfono (con código país)"
+                value={newMessage.to}
+                onChange={(e) => setNewMessage({ ...newMessage, to: e.target.value })}
+                className="flex-1"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Input
+                placeholder="Escribe tu mensaje..."
+                value={newMessage.content}
+                onChange={(e) => setNewMessage({ ...newMessage, content: e.target.value })}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendMessage();
+                  }
+                }}
+                className="flex-1"
+              />
+              <Button
+                onClick={handleSendMessage}
+                disabled={isSending || !newMessage.to || !newMessage.content}
+              >
+                <Send className="h-4 w-4 mr-2" />
+                Enviar
+              </Button>
+            </div>
+          </CardContent>
         </Card>
 
         {/* Messages List */}

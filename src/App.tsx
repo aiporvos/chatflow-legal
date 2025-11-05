@@ -12,6 +12,8 @@ import Documents from "./pages/Documents";
 import Contacts from "./pages/Contacts";
 import CalendarPage from "./pages/CalendarPage";
 import Admin from "./pages/Admin";
+import Settings from "./pages/Settings";
+import Emails from "./pages/Emails";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -78,6 +80,22 @@ const App = () => (
             element={
               <ProtectedRoute>
                 <Admin />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <Settings />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/emails"
+            element={
+              <ProtectedRoute>
+                <Emails />
               </ProtectedRoute>
             }
           />

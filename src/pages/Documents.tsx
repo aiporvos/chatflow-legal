@@ -1,25 +1,51 @@
 import { Layout } from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, ExternalLink } from "lucide-react";
+import { FileText, ExternalLink, Search, FileStack, Sparkles } from "lucide-react";
 import { useDocuments } from "@/hooks/useDocuments";
 import { UploadDocumentDialog } from "@/components/documents/UploadDocumentDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { GenerateDocumentDialog } from "@/components/documents/GenerateDocumentDialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Documents = () => {
   const { data: documents, isLoading } = useDocuments();
+  const [search, setSearch] = useState("");
+
+  const filteredDocuments = documents?.filter((doc) =>
+    doc.file_name.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <Layout>
-      <div className="space-y-6">
+      <div className="space-y-6 p-6">
         <div className="flex items-center justify-between animate-fade-in">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">Documentos</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
+              <FileStack className="h-8 w-8 text-primary" />
+              Documentos
+            </h1>
             <p className="text-muted-foreground">
-              Gestiona todos los documentos legales
+              Gestiona, genera y busca documentos legales
             </p>
           </div>
-          <UploadDocumentDialog />
+          <div className="flex gap-2">
+            <GenerateDocumentDialog />
+            <UploadDocumentDialog />
+          </div>
+        </div>
+
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Buscar documentos..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-10 bg-card border-border"
+          />
         </div>
 
         {isLoading ? (
@@ -28,14 +54,14 @@ const Documents = () => {
               <Skeleton key={i} className="h-24 w-full bg-card" />
             ))}
           </div>
-        ) : documents && documents.length > 0 ? (
+        ) : filteredDocuments && filteredDocuments.length > 0 ? (
           <Card className="bg-card border-border">
             <CardHeader>
               <CardTitle className="text-foreground">Documentos Almacenados</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {documents.map((doc) => (
+                {filteredDocuments.map((doc) => (
                   <div
                     key={doc.id}
                     className="flex items-center justify-between rounded-lg border border-border bg-card p-4 transition-colors hover:bg-muted/50"
