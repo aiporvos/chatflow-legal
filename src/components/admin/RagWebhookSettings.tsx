@@ -6,15 +6,22 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useWebhooks } from "@/hooks/useWebhooks";
 import { useWebhookMutations } from "@/hooks/useWebhookMutations";
-import { Loader2, Webhook } from "lucide-react";
+import { useUserRole } from "@/hooks/useUserRole";
+import { useAuth } from "@/hooks/useAuth";
+import { Loader2, Webhook, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export const RagWebhookSettings = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const { data: webhooks, isLoading } = useWebhooks();
   const { createWebhook, updateWebhook } = useWebhookMutations();
+  const { data: role, isLoading: isLoadingRole } = useUserRole(user?.id);
   
   const [webhookUrl, setWebhookUrl] = useState("");
   const [existingWebhook, setExistingWebhook] = useState<any>(null);
+
+  const isAdmin = role === "admin";
 
   useEffect(() => {
     if (webhooks) {
@@ -67,7 +74,7 @@ export const RagWebhookSettings = () => {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || isLoadingRole) {
     return (
       <Card>
         <CardHeader>
@@ -81,6 +88,30 @@ export const RagWebhookSettings = () => {
         </CardHeader>
         <CardContent className="flex justify-center py-8">
           <Loader2 className="h-6 w-6 animate-spin" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Webhook className="h-5 w-5" />
+            Webhook RAG
+          </CardTitle>
+          <CardDescription>
+            Configura el webhook de n8n para consultas RAG
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Solo los administradores pueden configurar webhooks. Contacta a un administrador para gestionar esta configuración.
+            </AlertDescription>
+          </Alert>
         </CardContent>
       </Card>
     );
