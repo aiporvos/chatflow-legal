@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
+import { RagWebhookSettings } from "@/components/admin/RagWebhookSettings";
 
 const Settings = () => {
   const { toast } = useToast();
@@ -52,8 +53,12 @@ const Settings = () => {
           </p>
         </div>
 
-        <Tabs defaultValue="n8n" className="space-y-4">
+        <Tabs defaultValue="rag" className="space-y-4">
           <TabsList className="bg-muted">
+            <TabsTrigger value="rag" className="data-[state=active]:bg-background">
+              <Webhook className="h-4 w-4 mr-2" />
+              Webhook RAG
+            </TabsTrigger>
             <TabsTrigger value="n8n" className="data-[state=active]:bg-background">
               <Webhook className="h-4 w-4 mr-2" />
               N8N Webhooks
@@ -63,6 +68,10 @@ const Settings = () => {
               Supabase
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="rag">
+            <RagWebhookSettings />
+          </TabsContent>
 
           <TabsContent value="n8n" className="space-y-4">
             <Card className="bg-card border-border">

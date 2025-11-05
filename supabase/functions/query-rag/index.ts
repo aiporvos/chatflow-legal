@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -19,9 +20,6 @@ serve(async (req) => {
       throw new Error("Missing Supabase environment variables");
     }
 
-    const { createClient } = await import(
-      "https://esm.sh/@supabase/supabase-js@2.39.3"
-    );
     const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
     // Get the n8n webhook configuration for RAG queries
@@ -65,7 +63,7 @@ serve(async (req) => {
   } catch (error) {
     console.error("Error in query-rag function:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
       {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
