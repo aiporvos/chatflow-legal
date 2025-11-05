@@ -1,7 +1,7 @@
 import { Layout } from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Settings as SettingsIcon, Webhook, Database, Mail, MessageSquare, Calendar as CalendarIcon } from "lucide-react";
+import { Settings as SettingsIcon, Webhook, Database, Mail, MessageSquare, Calendar as CalendarIcon, AlertCircle } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -9,9 +9,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { RagWebhookSettings } from "@/components/admin/RagWebhookSettings";
+import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const Settings = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
+  const { data: role, isLoading: isLoadingRole } = useUserRole(user?.id);
   const [n8nConfig, setN8nConfig] = useState({
     baseUrl: localStorage.getItem("n8n_base_url") || "",
     casesWebhook: localStorage.getItem("n8n_cases_webhook") || "",
@@ -31,6 +36,15 @@ const Settings = () => {
   });
 
   const saveN8nConfig = () => {
+    if (role !== "admin") {
+      toast({
+        title: "Acceso denegado",
+        description: "Solo los administradores pueden modificar esta configuración",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     Object.entries(n8nConfig).forEach(([key, value]) => {
       localStorage.setItem(`n8n_${key.replace(/([A-Z])/g, "_$1").toLowerCase()}`, value);
     });
@@ -39,6 +53,8 @@ const Settings = () => {
       description: "Los endpoints de N8N han sido actualizados",
     });
   };
+
+  const isAdmin = role === "admin";
 
   return (
     <Layout>
@@ -82,6 +98,14 @@ const Settings = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
+                {!isAdmin && (
+                  <Alert>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      Solo los administradores pueden modificar la configuración de webhooks N8N.
+                    </AlertDescription>
+                  </Alert>
+                )}
                 {/* Base URL */}
                 <div className="space-y-2">
                   <Label htmlFor="baseUrl" className="text-foreground">URL Base de N8N</Label>
@@ -91,6 +115,7 @@ const Settings = () => {
                     value={n8nConfig.baseUrl}
                     onChange={(e) => setN8nConfig({ ...n8nConfig, baseUrl: e.target.value })}
                     className="bg-background border-border"
+                    disabled={!isAdmin}
                   />
                 </div>
 
@@ -106,6 +131,7 @@ const Settings = () => {
                     value={n8nConfig.casesWebhook}
                     onChange={(e) => setN8nConfig({ ...n8nConfig, casesWebhook: e.target.value })}
                     className="bg-background border-border"
+                    disabled={!isAdmin}
                   />
                   <p className="text-xs text-muted-foreground">
                     Se usa en: Página de Expedientes - Escaneo de imágenes
@@ -124,6 +150,7 @@ const Settings = () => {
                     value={n8nConfig.scanDocumentWebhook}
                     onChange={(e) => setN8nConfig({ ...n8nConfig, scanDocumentWebhook: e.target.value })}
                     className="bg-background border-border"
+                    disabled={!isAdmin}
                   />
                   <p className="text-xs text-muted-foreground">
                     Se usa en: Subir imagen de expediente → Vision API → Extraer datos
@@ -142,6 +169,7 @@ const Settings = () => {
                     value={n8nConfig.documentsWebhook}
                     onChange={(e) => setN8nConfig({ ...n8nConfig, documentsWebhook: e.target.value })}
                     className="bg-background border-border"
+                    disabled={!isAdmin}
                   />
                   <p className="text-xs text-muted-foreground">
                     Se usa en: Subir documentos a Drive y RAG
@@ -160,6 +188,7 @@ const Settings = () => {
                     value={n8nConfig.generateDocumentWebhook}
                     onChange={(e) => setN8nConfig({ ...n8nConfig, generateDocumentWebhook: e.target.value })}
                     className="bg-background border-border"
+                    disabled={!isAdmin}
                   />
                   <p className="text-xs text-muted-foreground">
                     Se usa en: Página de Documentos - Generar documentos genéricos y específicos
@@ -178,6 +207,7 @@ const Settings = () => {
                     value={n8nConfig.visionApiWebhook}
                     onChange={(e) => setN8nConfig({ ...n8nConfig, visionApiWebhook: e.target.value })}
                     className="bg-background border-border"
+                    disabled={!isAdmin}
                   />
                   <p className="text-xs text-muted-foreground">
                     Se usa en: Crear plantillas desde imagen - Analiza y extrae campos variables
@@ -196,6 +226,7 @@ const Settings = () => {
                     value={n8nConfig.whatsappIncomingWebhook}
                     onChange={(e) => setN8nConfig({ ...n8nConfig, whatsappIncomingWebhook: e.target.value })}
                     className="bg-background border-border"
+                    disabled={!isAdmin}
                   />
                   <p className="text-xs text-muted-foreground">
                     Se usa en: Recibir mensajes desde WhatsApp → Edge Function → Base de datos
@@ -214,6 +245,7 @@ const Settings = () => {
                     value={n8nConfig.whatsappOutgoingWebhook}
                     onChange={(e) => setN8nConfig({ ...n8nConfig, whatsappOutgoingWebhook: e.target.value })}
                     className="bg-background border-border"
+                    disabled={!isAdmin}
                   />
                   <p className="text-xs text-muted-foreground">
                     Se usa en: Enviar mensajes desde la app → N8N → WhatsApp
@@ -232,6 +264,7 @@ const Settings = () => {
                     value={n8nConfig.emailWebhook}
                     onChange={(e) => setN8nConfig({ ...n8nConfig, emailWebhook: e.target.value })}
                     className="bg-background border-border"
+                    disabled={!isAdmin}
                   />
                   <p className="text-xs text-muted-foreground">
                     Se usa en: Página de Correos - Gmail integration
@@ -250,13 +283,14 @@ const Settings = () => {
                     value={n8nConfig.calendarWebhook}
                     onChange={(e) => setN8nConfig({ ...n8nConfig, calendarWebhook: e.target.value })}
                     className="bg-background border-border"
+                    disabled={!isAdmin}
                   />
                   <p className="text-xs text-muted-foreground">
                     Se usa en: Página de Agenda - Crear citas con lenguaje natural
                   </p>
                 </div>
 
-                <Button onClick={saveN8nConfig} className="w-full">
+                <Button onClick={saveN8nConfig} className="w-full" disabled={!isAdmin}>
                   Guardar Configuración de N8N
                 </Button>
               </CardContent>
