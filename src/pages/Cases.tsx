@@ -10,6 +10,7 @@ import { CreateCaseDialog } from "@/components/cases/CreateCaseDialog";
 import { EditCaseDialog } from "@/components/cases/EditCaseDialog";
 import { DeleteCaseDialog } from "@/components/cases/DeleteCaseDialog";
 import { ScanCaseDialog } from "@/components/cases/ScanCaseDialog";
+import { CaseMessagesCount } from "@/components/cases/CaseMessagesCount";
 
 const Cases = () => {
   const { data: cases, isLoading } = useCases();
@@ -91,9 +92,12 @@ const Cases = () => {
                         Expediente: {case_.case_number}
                       </CardDescription>
                     </div>
-                    <Badge variant="outline" className={getStatusColor(case_.status)}>
-                      {getStatusLabel(case_.status)}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <CaseMessagesCount caseId={case_.id} />
+                      <Badge variant="outline" className={getStatusColor(case_.status)}>
+                        {getStatusLabel(case_.status)}
+                      </Badge>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent>

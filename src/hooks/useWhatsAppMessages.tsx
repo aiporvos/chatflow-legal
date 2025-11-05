@@ -8,7 +8,10 @@ export const useWhatsAppMessages = (caseId?: string) => {
     queryFn: async () => {
       let query = supabase
         .from("whatsapp_messages")
-        .select("*")
+        .select(`
+          *,
+          case:cases(case_number, title, status)
+        `)
         .order("created_at", { ascending: true });
 
       if (caseId) {

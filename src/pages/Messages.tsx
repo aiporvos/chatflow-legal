@@ -160,13 +160,23 @@ const Messages = () => {
                       </div>
                       <div className="flex-1 space-y-2">
                         <div className="flex items-start justify-between">
-                          <div>
+                          <div className="flex-1">
                             <p className="font-medium text-foreground">
                               De: {message.from_number}
                             </p>
                             <p className="text-sm text-muted-foreground">
                               Para: {message.to_number}
                             </p>
+                            {message.case && (
+                              <div className="flex items-center gap-2 mt-1">
+                                <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
+                                  📁 {message.case.case_number}
+                                </Badge>
+                                <span className="text-xs text-muted-foreground">
+                                  {message.case.title}
+                                </span>
+                              </div>
+                            )}
                           </div>
                           <Badge variant="outline" className={getStatusColor(message.status)}>
                             {getStatusLabel(message.status)}
