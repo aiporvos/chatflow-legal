@@ -1,16 +1,20 @@
-import { Scale, FolderOpen, FileText, Scale as ScaleIcon, Mail, Calendar, MessageSquare, BarChart3, Shield, Settings } from "lucide-react";
+import { Scale, FolderOpen, FileText, Scale as ScaleIcon, Mail, Calendar, MessageSquare, BarChart3, Shield, Settings, ShieldCheck } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useCases } from "@/hooks/useCases";
 import { useWhatsAppMessages } from "@/hooks/useWhatsAppMessages";
+import { useUserRole } from "@/hooks/useUserRole";
+import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 export const AppSidebar = () => {
   const location = useLocation();
+  const { user } = useAuth();
   const { data: cases } = useCases();
   const { data: messages } = useWhatsAppMessages();
+  const { data: userRole } = useUserRole(user?.id);
   
   const { data: documents } = useQuery({
     queryKey: ["documents-count"],
@@ -24,6 +28,7 @@ export const AppSidebar = () => {
 
   const activeCases = cases?.filter(c => c.status !== "closed" && c.status !== "archived").length || 0;
   const messagesCount = messages?.length || 0;
+  const isAdmin = userRole === "admin";
 
   const menuItems = [
     { icon: FolderOpen, label: "Expedientes", path: "/cases", count: activeCases },
@@ -34,6 +39,7 @@ export const AppSidebar = () => {
     { icon: MessageSquare, label: "WhatsApp", path: "/messages", count: messagesCount },
     { icon: BarChart3, label: "Analytics", path: "/analytics" },
     { icon: Shield, label: "Cumplimiento", path: "/compliance" },
+    ...(isAdmin ? [{ icon: ShieldCheck, label: "Administración", path: "/admin" }] : []),
     { icon: Settings, label: "Configuración", path: "/settings" },
   ];
 

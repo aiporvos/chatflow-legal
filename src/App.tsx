@@ -11,6 +11,7 @@ import Messages from "./pages/Messages";
 import Documents from "./pages/Documents";
 import Contacts from "./pages/Contacts";
 import CalendarPage from "./pages/CalendarPage";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -69,6 +70,14 @@ const App = () => (
             element={
               <ProtectedRoute>
                 <CalendarPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <Admin />
               </ProtectedRoute>
             }
           />
