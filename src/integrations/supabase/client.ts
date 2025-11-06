@@ -4,26 +4,51 @@ import type { Database } from './types';
 
 // Support both build-time and runtime environment variables
 // @ts-ignore - window.__ENV__ is injected at runtime by Docker
-const getEnvVar = (key: string) => {
+const getEnvVar = (key: string): string => {
   // @ts-ignore - Check if runtime env exists AND has actual values
   if (typeof window !== 'undefined' && window.__ENV__ && window.__ENV__[key]) {
     // @ts-ignore
     return window.__ENV__[key];
   }
   // Fallback to build-time env vars (Lovable Cloud)
-  return import.meta.env[key];
+  return import.meta.env[key] || '';
 };
 
 const SUPABASE_URL = getEnvVar('VITE_SUPABASE_URL');
 const SUPABASE_PUBLISHABLE_KEY = getEnvVar('VITE_SUPABASE_PUBLISHABLE_KEY');
 
+// Validate environment variables
+if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
+  const missingVars: string[] = [];
+  if (!SUPABASE_URL) missingVars.push('VITE_SUPABASE_URL');
+  if (!SUPABASE_PUBLISHABLE_KEY) missingVars.push('VITE_SUPABASE_PUBLISHABLE_KEY');
+  
+  console.error(
+    `❌ Missing required environment variables: ${missingVars.join(', ')}\n` +
+    `Please configure these variables in Dokploy or your .env file.\n` +
+    `See documentation: https://github.com/aiporvos/chatflow-legal/blob/main/docs/DOCKER_DEPLOYMENT.md`
+  );
+  
+  // Show user-friendly error in development
+  if (import.meta.env.DEV) {
+    throw new Error(
+      `Missing required environment variables: ${missingVars.join(', ')}\n` +
+      `Please configure these in your .env file or Dokploy settings.`
+    );
+  }
+}
+
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-  auth: {
-    storage: localStorage,
-    persistSession: true,
-    autoRefreshToken: true,
+export const supabase = createClient<Database>(
+  SUPABASE_URL || 'https://placeholder.supabase.co',
+  SUPABASE_PUBLISHABLE_KEY || 'placeholder-key',
+  {
+    auth: {
+      storage: localStorage,
+      persistSession: true,
+      autoRefreshToken: true,
+    }
   }
-});
+);

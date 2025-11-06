@@ -43,10 +43,13 @@ const Auth = () => {
         description: "Has iniciado sesión correctamente.",
       });
       navigate("/dashboard");
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : "Ocurrió un error al iniciar sesión. Por favor, intenta nuevamente.";
       toast({
         title: "Error",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -61,7 +64,7 @@ const Auth = () => {
     try {
       const redirectUrl = `${window.location.origin}/dashboard`;
       
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -74,6 +77,15 @@ const Auth = () => {
 
       if (error) throw error;
 
+      // Check if email confirmation is required
+      if (data.user && !data.session) {
+        toast({
+          title: "¡Cuenta creada!",
+          description: "Por favor, verifica tu email para completar el registro.",
+        });
+        return;
+      }
+
       toast({
         title: "¡Cuenta creada!",
         description: "Tu cuenta ha sido creada correctamente. Redirigiendo...",
@@ -83,10 +95,13 @@ const Auth = () => {
       setTimeout(() => {
         navigate("/dashboard");
       }, 1000);
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : "Ocurrió un error al crear la cuenta. Por favor, intenta nuevamente.";
       toast({
         title: "Error",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

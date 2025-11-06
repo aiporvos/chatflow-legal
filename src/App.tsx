@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { ConfigError } from "@/components/ConfigError";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Cases from "./pages/Cases";
@@ -19,9 +20,32 @@ import Analytics from "./pages/Analytics";
 import Compliance from "./pages/Compliance";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 2,
+      staleTime: 30000,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
-const App = () => (
+// Check if configuration is valid
+const isConfigValid = () => {
+  // @ts-ignore
+  const env = typeof window !== 'undefined' && window.__ENV__ ? window.__ENV__ : {};
+  const url = env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL;
+  const key = env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+  return !!(url && key && url !== 'https://placeholder.supabase.co' && key !== 'placeholder-key');
+};
+
+const App = () => {
+  // Show config error if environment variables are missing
+  if (!isConfigValid()) {
+    return <ConfigError />;
+  }
+
+  return (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
@@ -131,6 +155,7 @@ const App = () => (
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
-);
+  );
+};
 
 export default App;

@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { CreateCaseInput, UpdateCaseInput } from "@/lib/validations/case";
+import type { PostgrestError } from "@supabase/supabase-js";
 
 export const useCaseMutations = () => {
   const queryClient = useQueryClient();
@@ -22,7 +23,10 @@ export const useCaseMutations = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error creating case:", error);
+        throw new Error(error.message || "Error al crear el expediente");
+      }
       return newCase;
     },
     onSuccess: () => {
@@ -32,7 +36,7 @@ export const useCaseMutations = () => {
         description: "El expediente ha sido creado exitosamente.",
       });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
         title: "Error al crear expediente",
         description: error.message || "Ocurrió un error al crear el expediente.",
@@ -57,7 +61,10 @@ export const useCaseMutations = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error updating case:", error);
+        throw new Error(error.message || "Error al actualizar el expediente");
+      }
       return updatedCase;
     },
     onSuccess: () => {
@@ -67,7 +74,7 @@ export const useCaseMutations = () => {
         description: "El expediente ha sido actualizado exitosamente.",
       });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
         title: "Error al actualizar expediente",
         description: error.message || "Ocurrió un error al actualizar el expediente.",
@@ -83,7 +90,10 @@ export const useCaseMutations = () => {
         .delete()
         .eq("id", id);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error deleting case:", error);
+        throw new Error(error.message || "Error al eliminar el expediente");
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cases"] });
@@ -92,7 +102,7 @@ export const useCaseMutations = () => {
         description: "El expediente ha sido eliminado exitosamente.",
       });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
         title: "Error al eliminar expediente",
         description: error.message || "Ocurrió un error al eliminar el expediente.",

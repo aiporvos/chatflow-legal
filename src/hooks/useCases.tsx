@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import type { PostgrestError } from "@supabase/supabase-js";
 
 export const useCases = () => {
   return useQuery({
@@ -14,8 +15,13 @@ export const useCases = () => {
         `)
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
-      return data;
+      if (error) {
+        console.error("Error fetching cases:", error);
+        throw new Error(error.message || "Error al cargar los expedientes");
+      }
+      return data || [];
     },
+    retry: 2,
+    staleTime: 30000, // 30 seconds
   });
 };
