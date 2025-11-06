@@ -62,8 +62,19 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      // Usar la URL actual de la aplicación para el redirect
-      const redirectUrl = `${window.location.origin}/auth?redirectTo=/dashboard`;
+      // Determinar la URL de producción o usar la actual
+      const getRedirectUrl = () => {
+        // Si estamos en producción (no localhost), usar la URL actual
+        if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+          return `${window.location.origin}/auth?redirectTo=/dashboard`;
+        }
+        // Si estamos en desarrollo, usar la URL de producción configurada
+        // O usar una variable de entorno si está disponible
+        const prodUrl = import.meta.env.VITE_PRODUCTION_URL || 'https://legal.aiporvos.com';
+        return `${prodUrl}/auth?redirectTo=/dashboard`;
+      };
+
+      const redirectUrl = getRedirectUrl();
       
       const { data, error } = await supabase.auth.signUp({
         email,
