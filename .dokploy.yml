@@ -1,0 +1,14 @@
+# Configuración Dokploy
+# Fuerza el uso del Dockerfile en lugar de Nixpacks
+
+build:
+  type: dockerfile
+  dockerfile: Dockerfile
+  context: .
+
+deploy:
+  port: 80
+  healthcheck:
+    path: /health
+    interval: 30s
+

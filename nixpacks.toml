@@ -1,0 +1,12 @@
+# Configuración Nixpacks para forzar uso de Dockerfile
+# Este archivo fuerza a Dokploy a usar el Dockerfile en lugar de auto-detectar
+
+[phases.setup]
+nixPkgs = ["nodejs-20_x"]
+
+[phases.build]
+cmds = ["echo 'Using Dockerfile instead of Nixpacks'"]
+
+[phases.start]
+cmd = "echo 'This should not be used - Dockerfile will be used instead'"
+

@@ -1,0 +1,7 @@
+# Ignorar Edge Functions para que Nixpacks no las detecte como aplicación principal
+supabase/functions/
+supabase/migrations/
+*.md
+docs/
+scripts/
+
