@@ -62,7 +62,8 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      const redirectUrl = `${window.location.origin}/dashboard`;
+      // Usar la URL actual de la aplicación para el redirect
+      const redirectUrl = `${window.location.origin}/auth?redirectTo=/dashboard`;
       
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -75,32 +76,42 @@ const Auth = () => {
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error en signUp:", error);
+        throw error;
+      }
 
-      // Check if email confirmation is required
-      if (data.user && !data.session) {
+      // Verificar si el usuario fue creado
+      if (!data.user) {
+        throw new Error("No se pudo crear el usuario");
+      }
+
+      // Si hay sesión, el usuario está confirmado automáticamente
+      if (data.session) {
         toast({
           title: "¡Cuenta creada!",
-          description: "Por favor, verifica tu email para completar el registro.",
+          description: "Tu cuenta ha sido creada correctamente. Redirigiendo...",
         });
+        setTimeout(() => {
+          navigate("/dashboard");
+        }, 1000);
         return;
       }
 
+      // Si no hay sesión, se requiere confirmación de email
       toast({
         title: "¡Cuenta creada!",
-        description: "Tu cuenta ha sido creada correctamente. Redirigiendo...",
+        description: "Por favor, verifica tu email para completar el registro. Revisa tu bandeja de entrada.",
+        duration: 5000,
       });
       
-      // Auto login after signup
-      setTimeout(() => {
-        navigate("/dashboard");
-      }, 1000);
     } catch (error) {
       const errorMessage = error instanceof Error 
         ? error.message 
         : "Ocurrió un error al crear la cuenta. Por favor, intenta nuevamente.";
+      console.error("Error completo en signUp:", error);
       toast({
-        title: "Error",
+        title: "Error al crear cuenta",
         description: errorMessage,
         variant: "destructive",
       });

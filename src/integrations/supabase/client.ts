@@ -10,7 +10,7 @@ const getEnvVar = (key: string): string => {
     // @ts-ignore
     return window.__ENV__[key];
   }
-  // Fallback to build-time env vars (Lovable Cloud)
+  // Fallback to build-time env vars
   return import.meta.env[key] || '';
 };
 

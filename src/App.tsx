@@ -2,9 +2,11 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useSearchParams } from "react-router-dom";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ConfigError } from "@/components/ConfigError";
+import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Cases from "./pages/Cases";
@@ -57,6 +59,55 @@ const isConfigValid = () => {
   return isValidUrl(url) && isValidKey(key);
 };
 
+// Component to handle auth callbacks (email confirmation, etc.)
+const AuthCallbackHandler = () => {
+  const [searchParams] = useSearchParams();
+  const hashParams = new URLSearchParams(window.location.hash.substring(1));
+
+  useEffect(() => {
+    const handleAuthCallback = async () => {
+      // Check for hash-based callback (email confirmation)
+      const accessToken = hashParams.get('access_token');
+      const refreshToken = hashParams.get('refresh_token');
+      const type = hashParams.get('type');
+
+      if (accessToken && refreshToken && type === 'recovery') {
+        // Email confirmation callback
+        const { error } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+
+        if (error) {
+          console.error('Error setting session:', error);
+          return;
+        }
+
+        // Redirect to dashboard after successful confirmation
+        const redirectTo = searchParams.get('redirectTo') || '/dashboard';
+        window.location.href = redirectTo;
+        return;
+      }
+
+      // Check for query-based callback
+      const code = searchParams.get('code');
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (error) {
+          console.error('Error exchanging code for session:', error);
+          return;
+        }
+        const redirectTo = searchParams.get('redirectTo') || '/dashboard';
+        window.location.href = redirectTo;
+      }
+    };
+
+    handleAuthCallback();
+  }, [searchParams, hashParams]);
+
+  return null;
+};
+
 const App = () => {
   // Show config error if environment variables are missing
   if (!isConfigValid()) {
@@ -64,14 +115,19 @@ const App = () => {
   }
 
   return (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="/auth" element={<Auth />} />
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/auth" element={
+                  <>
+                    <AuthCallbackHandler />
+                    <Auth />
+                  </>
+                } />
           <Route
             path="/dashboard"
             element={
