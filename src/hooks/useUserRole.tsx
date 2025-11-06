@@ -13,7 +13,9 @@ export const useUserRole = (userId?: string) => {
         .from("user_roles")
         .select("role")
         .eq("user_id", userId)
-        .single();
+        .order("created_at", { ascending: true })
+        .limit(1)
+        .maybeSingle();
 
       if (error) throw error;
       return data?.role as UserRole | null;
