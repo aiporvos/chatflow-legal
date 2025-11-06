@@ -13,7 +13,7 @@ export const useUserRole = (userId?: string) => {
         .from("user_roles")
         .select("role")
         .eq("user_id", userId)
-        .order("created_at", { ascending: true })
+        .order("created_at", { ascending: false }) // Obtener el rol más reciente
         .limit(1)
         .maybeSingle();
 
