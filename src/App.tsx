@@ -62,34 +62,37 @@ const isConfigValid = () => {
 // Component to handle auth callbacks (email confirmation, etc.)
 const AuthCallbackHandler = () => {
   const [searchParams] = useSearchParams();
-  const hashParams = new URLSearchParams(window.location.hash.substring(1));
 
   useEffect(() => {
     const handleAuthCallback = async () => {
       // Check for hash-based callback (email confirmation)
-      const accessToken = hashParams.get('access_token');
-      const refreshToken = hashParams.get('refresh_token');
-      const type = hashParams.get('type');
+      const hash = window.location.hash.substring(1);
+      if (hash) {
+        const hashParams = new URLSearchParams(hash);
+        const accessToken = hashParams.get('access_token');
+        const refreshToken = hashParams.get('refresh_token');
+        const type = hashParams.get('type');
 
-      if (accessToken && refreshToken && type === 'recovery') {
-        // Email confirmation callback
-        const { error } = await supabase.auth.setSession({
-          access_token: accessToken,
-          refresh_token: refreshToken,
-        });
+        if (accessToken && refreshToken) {
+          // Email confirmation or password reset callback
+          const { error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
 
-        if (error) {
-          console.error('Error setting session:', error);
+          if (error) {
+            console.error('Error setting session:', error);
+            return;
+          }
+
+          // Redirect to dashboard after successful confirmation
+          const redirectTo = searchParams.get('redirectTo') || '/dashboard';
+          window.location.href = redirectTo;
           return;
         }
-
-        // Redirect to dashboard after successful confirmation
-        const redirectTo = searchParams.get('redirectTo') || '/dashboard';
-        window.location.href = redirectTo;
-        return;
       }
 
-      // Check for query-based callback
+      // Check for query-based callback (PKCE flow)
       const code = searchParams.get('code');
       if (code) {
         const { error } = await supabase.auth.exchangeCodeForSession(code);
@@ -103,7 +106,7 @@ const AuthCallbackHandler = () => {
     };
 
     handleAuthCallback();
-  }, [searchParams, hashParams]);
+  }, [searchParams]);
 
   return null;
 };
