@@ -16,6 +16,7 @@ import {
   DollarSign
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 const Dashboard = () => {
   const { data: cases, isLoading: casesLoading } = useCases();
@@ -75,24 +76,28 @@ const Dashboard = () => {
       description: "Crear nueva demanda con asistencia IA",
       icon: FileText,
       iconColor: "text-primary",
+      path: "/documents",
     },
     {
       title: "Consultar Jurisprudencia",
       description: "Buscar precedentes relevantes",
       icon: Search,
       iconColor: "text-primary",
+      path: "/rag",
     },
     {
       title: "Revisar Correos",
       description: "12 correos pendientes de clasificar",
       icon: Mail,
       iconColor: "text-primary",
+      path: "/emails",
     },
     {
       title: "Programar Reunión",
       description: "Crear evento en calendario",
       icon: Calendar,
       iconColor: "text-primary",
+      path: "/calendar",
     },
   ];
 
@@ -126,19 +131,21 @@ const Dashboard = () => {
               <h2 className="text-xl font-bold mb-4">Acciones Rápidas</h2>
               <div className="grid gap-4 md:grid-cols-2">
                 {quickActions.map((action) => (
-                  <Card key={action.title} className="bg-card border-border hover-scale cursor-pointer transition-all hover:border-primary/50">
-                    <CardContent className="pt-6">
-                      <div className="flex items-start gap-4">
-                        <div className="rounded-lg bg-primary/10 p-3">
-                          <action.icon className={`h-6 w-6 ${action.iconColor}`} />
+                  <Link key={action.title} to={action.path}>
+                    <Card className="bg-card border-border hover-scale cursor-pointer transition-all hover:border-primary/50">
+                      <CardContent className="pt-6">
+                        <div className="flex items-start gap-4">
+                          <div className="rounded-lg bg-primary/10 p-3">
+                            <action.icon className={`h-6 w-6 ${action.iconColor}`} />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-foreground">{action.title}</h3>
+                            <p className="text-sm text-muted-foreground mt-1">{action.description}</p>
+                          </div>
                         </div>
-                        <div>
-                          <h3 className="font-semibold text-foreground">{action.title}</h3>
-                          <p className="text-sm text-muted-foreground mt-1">{action.description}</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                      </CardContent>
+                    </Card>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -147,7 +154,9 @@ const Dashboard = () => {
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold">Expedientes Recientes</h2>
-                <Button variant="link" className="text-primary">Ver todos</Button>
+                <Link to="/cases">
+                  <Button variant="link" className="text-primary">Ver todos</Button>
+                </Link>
               </div>
               <Card className="bg-card border-border">
                 <CardContent className="pt-6">

@@ -14,6 +14,9 @@ import CalendarPage from "./pages/CalendarPage";
 import Admin from "./pages/Admin";
 import Settings from "./pages/Settings";
 import Emails from "./pages/Emails";
+import Rag from "./pages/Rag";
+import Analytics from "./pages/Analytics";
+import Compliance from "./pages/Compliance";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -96,6 +99,30 @@ const App = () => (
             element={
               <ProtectedRoute>
                 <Emails />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/rag"
+            element={
+              <ProtectedRoute>
+                <Rag />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/analytics"
+            element={
+              <ProtectedRoute>
+                <Analytics />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/compliance"
+            element={
+              <ProtectedRoute>
+                <Compliance />
               </ProtectedRoute>
             }
           />
