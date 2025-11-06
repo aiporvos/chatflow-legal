@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { CreateCaseInput, UpdateCaseInput } from "@/lib/validations/case";
-import type { PostgrestError } from "@supabase/supabase-js";
+import { logError, getUserFriendlyMessage } from "@/utils/errorHandler";
 
 export const useCaseMutations = () => {
   const queryClient = useQueryClient();
@@ -24,8 +24,12 @@ export const useCaseMutations = () => {
         .single();
 
       if (error) {
-        console.error("Error creating case:", error);
-        throw new Error(error.message || "Error al crear el expediente");
+        const errorDetails = logError(error, { 
+          operation: 'create_case',
+          table: 'cases',
+          data: { case_number: data.case_number, title: data.title }
+        });
+        throw new Error(getUserFriendlyMessage(error) || "Error al crear el expediente");
       }
       return newCase;
     },
@@ -62,8 +66,12 @@ export const useCaseMutations = () => {
         .single();
 
       if (error) {
-        console.error("Error updating case:", error);
-        throw new Error(error.message || "Error al actualizar el expediente");
+        const errorDetails = logError(error, { 
+          operation: 'update_case',
+          table: 'cases',
+          case_id: id
+        });
+        throw new Error(getUserFriendlyMessage(error) || "Error al actualizar el expediente");
       }
       return updatedCase;
     },
@@ -91,8 +99,12 @@ export const useCaseMutations = () => {
         .eq("id", id);
 
       if (error) {
-        console.error("Error deleting case:", error);
-        throw new Error(error.message || "Error al eliminar el expediente");
+        const errorDetails = logError(error, { 
+          operation: 'delete_case',
+          table: 'cases',
+          case_id: id
+        });
+        throw new Error(getUserFriendlyMessage(error) || "Error al eliminar el expediente");
       }
     },
     onSuccess: () => {

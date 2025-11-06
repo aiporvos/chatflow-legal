@@ -36,7 +36,25 @@ const isConfigValid = () => {
   const env = typeof window !== 'undefined' && window.__ENV__ ? window.__ENV__ : {};
   const url = env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL;
   const key = env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-  return !!(url && key && url !== 'https://placeholder.supabase.co' && key !== 'placeholder-key');
+  
+  // Validate URL format
+  const isValidUrl = (url: string): boolean => {
+    if (!url || url.trim() === '' || url === 'https://placeholder.supabase.co') return false;
+    try {
+      const urlObj = new URL(url);
+      return urlObj.protocol === 'https:' && urlObj.hostname.includes('supabase');
+    } catch {
+      return false;
+    }
+  };
+  
+  // Validate key format
+  const isValidKey = (key: string): boolean => {
+    if (!key || key.trim() === '' || key === 'placeholder-key') return false;
+    return key.length > 20 && (key.startsWith('eyJ') || key.length > 50);
+  };
+  
+  return isValidUrl(url) && isValidKey(key);
 };
 
 const App = () => {

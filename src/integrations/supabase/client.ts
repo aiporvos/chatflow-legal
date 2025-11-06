@@ -18,13 +18,35 @@ const SUPABASE_URL = getEnvVar('VITE_SUPABASE_URL');
 const SUPABASE_PUBLISHABLE_KEY = getEnvVar('VITE_SUPABASE_PUBLISHABLE_KEY');
 
 // Validate environment variables
-if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
+const isValidUrl = (url: string): boolean => {
+  if (!url || url.trim() === '') return false;
+  if (url === 'https://placeholder.supabase.co') return false;
+  try {
+    const urlObj = new URL(url);
+    return urlObj.protocol === 'https:' && urlObj.hostname.includes('supabase');
+  } catch {
+    return false;
+  }
+};
+
+const isValidKey = (key: string): boolean => {
+  if (!key || key.trim() === '') return false;
+  if (key === 'placeholder-key') return false;
+  // Supabase keys typically start with 'eyJ' (JWT)
+  return key.length > 20 && (key.startsWith('eyJ') || key.length > 50);
+};
+
+const isConfigValid = isValidUrl(SUPABASE_URL) && isValidKey(SUPABASE_PUBLISHABLE_KEY);
+
+if (!isConfigValid) {
   const missingVars: string[] = [];
-  if (!SUPABASE_URL) missingVars.push('VITE_SUPABASE_URL');
-  if (!SUPABASE_PUBLISHABLE_KEY) missingVars.push('VITE_SUPABASE_PUBLISHABLE_KEY');
+  if (!isValidUrl(SUPABASE_URL)) missingVars.push('VITE_SUPABASE_URL');
+  if (!isValidKey(SUPABASE_PUBLISHABLE_KEY)) missingVars.push('VITE_SUPABASE_PUBLISHABLE_KEY');
   
   console.error(
-    `❌ Missing required environment variables: ${missingVars.join(', ')}\n` +
+    `❌ Invalid or missing environment variables: ${missingVars.join(', ')}\n` +
+    `SUPABASE_URL: ${SUPABASE_URL ? 'Set but invalid' : 'Not set'}\n` +
+    `SUPABASE_KEY: ${SUPABASE_PUBLISHABLE_KEY ? 'Set but invalid' : 'Not set'}\n` +
     `Please configure these variables in Dokploy or your .env file.\n` +
     `See documentation: https://github.com/aiporvos/chatflow-legal/blob/main/docs/DOCKER_DEPLOYMENT.md`
   );
@@ -32,7 +54,7 @@ if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
   // Show user-friendly error in development
   if (import.meta.env.DEV) {
     throw new Error(
-      `Missing required environment variables: ${missingVars.join(', ')}\n` +
+      `Invalid or missing environment variables: ${missingVars.join(', ')}\n` +
       `Please configure these in your .env file or Dokploy settings.`
     );
   }
@@ -41,14 +63,24 @@ if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
-export const supabase = createClient<Database>(
-  SUPABASE_URL || 'https://placeholder.supabase.co',
-  SUPABASE_PUBLISHABLE_KEY || 'placeholder-key',
-  {
-    auth: {
-      storage: localStorage,
-      persistSession: true,
-      autoRefreshToken: true,
-    }
-  }
-);
+// Only create client if config is valid, otherwise create a mock that will fail gracefully
+export const supabase = isConfigValid
+  ? createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+      auth: {
+        storage: localStorage,
+        persistSession: true,
+        autoRefreshToken: true,
+      },
+      global: {
+        headers: {
+          'x-client-info': 'legal-ai@1.0.0',
+        },
+      },
+    })
+  : createClient<Database>('https://placeholder.supabase.co', 'placeholder-key', {
+      auth: {
+        storage: localStorage,
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    });
