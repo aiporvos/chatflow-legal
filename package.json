@@ -1,7 +1,9 @@
 {
-  "name": "vite_react_shadcn_ts",
+  "name": "legal-ai",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "Sistema de Gestión Legal Inteligente desarrollado por aiporvos",
+  "author": "aiporvos",
   "type": "module",
   "scripts": {
     "dev": "vite",

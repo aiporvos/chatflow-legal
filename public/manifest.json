@@ -1,0 +1,27 @@
+{
+  "name": "Legal AI - Sistema de Gestión Legal Inteligente",
+  "short_name": "Legal AI",
+  "description": "Sistema de Gestión Legal Inteligente desarrollado por aiporvos",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1e40af",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    }
+  ],
+  "categories": ["business", "productivity", "legal"],
+  "lang": "es",
+  "dir": "ltr"
+}
+
