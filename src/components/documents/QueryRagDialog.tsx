@@ -4,15 +4,19 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { MessageSquare, Loader2 } from "lucide-react";
+import { MessageSquare, Loader2, Settings } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useRagQuery } from "@/hooks/useRagQuery";
+import { Link } from "react-router-dom";
 
 export const QueryRagDialog = () => {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const { mutate: queryRag, isPending, data: response } = useRagQuery();
+  const { mutate: queryRag, isPending, data: response, error } = useRagQuery();
   const { toast } = useToast();
+
+  const isWebhookConfigError = error?.message?.includes("webhook") || error?.message?.includes("Configúralo");
 
   const handleQuery = () => {
     if (!query.trim()) {
@@ -54,6 +58,21 @@ export const QueryRagDialog = () => {
         </DialogHeader>
 
         <div className="space-y-4">
+          {isWebhookConfigError && (
+            <Alert variant="destructive">
+              <Settings className="h-4 w-4" />
+              <AlertDescription className="flex flex-col gap-2">
+                <span>El webhook RAG no está configurado. Necesitas configurarlo para usar esta función.</span>
+                <Link to="/settings" onClick={() => setOpen(false)}>
+                  <Button variant="outline" size="sm" className="mt-1">
+                    <Settings className="h-3 w-3 mr-1" />
+                    Ir a Configuración
+                  </Button>
+                </Link>
+              </AlertDescription>
+            </Alert>
+          )}
+
           <div>
             <Label htmlFor="query">Tu pregunta</Label>
             <Textarea

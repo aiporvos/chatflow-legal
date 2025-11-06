@@ -11,7 +11,12 @@ export const useRagQuery = () => {
         body: { query },
       });
 
-      if (error) throw error;
+      if (error) {
+        // Extract error message from the response
+        const errorMessage = error.message || "Error desconocido";
+        throw new Error(errorMessage);
+      }
+      
       return data;
     },
     onSuccess: (data) => {
@@ -24,11 +29,15 @@ export const useRagQuery = () => {
       }
     },
     onError: (error: Error) => {
-      toast({
-        title: "Error al consultar RAG",
-        description: error.message || "Verifica que el webhook esté configurado correctamente",
-        variant: "destructive",
-      });
+      // Only show toast if it's not a webhook configuration error
+      // (the UI will show a better error message with a link to settings)
+      if (!error.message?.includes("webhook") && !error.message?.includes("Configúralo")) {
+        toast({
+          title: "Error al consultar RAG",
+          description: error.message || "Verifica que el webhook esté configurado correctamente",
+          variant: "destructive",
+        });
+      }
     },
   });
 };
