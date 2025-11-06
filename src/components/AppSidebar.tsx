@@ -48,7 +48,10 @@ export const AppSidebar = () => {
   return (
     <aside className="flex h-screen w-56 flex-col bg-card border-r border-border">
       {/* Logo */}
-      <div className="flex h-20 items-center gap-3 border-b border-border px-4">
+      <Link
+        to="/dashboard"
+        className="flex h-20 items-center gap-3 border-b border-border px-4 transition-colors hover:bg-muted/60"
+      >
         <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
           <Scale className="h-6 w-6 text-primary" />
         </div>
@@ -56,7 +59,7 @@ export const AppSidebar = () => {
           <h1 className="text-sm font-bold text-foreground">Asistente Legal IA</h1>
           <p className="text-xs text-muted-foreground">Gestión Legal Inteligente</p>
         </div>
-      </div>
+      </Link>
 
       {/* Navigation */}
       <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
