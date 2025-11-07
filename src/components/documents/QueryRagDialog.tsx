@@ -10,10 +10,17 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useRagQuery } from "@/hooks/useRagQuery";
 import { Link } from "react-router-dom";
 
+type ConversationMessage = {
+  role: "user" | "assistant";
+  content: string;
+  sources?: string[];
+};
+
 export const QueryRagDialog = () => {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const { mutate: queryRag, isPending, data: response, error } = useRagQuery();
+  const [messages, setMessages] = useState<ConversationMessage[]>([]);
+  const { mutate: queryRag, isPending, error } = useRagQuery();
   const { toast } = useToast();
 
   const isWebhookConfigError = error?.message?.includes("webhook") || error?.message?.includes("Configúralo");
@@ -28,12 +35,37 @@ export const QueryRagDialog = () => {
       return;
     }
 
-    queryRag({ query: query.trim() });
+    const trimmed = query.trim();
+    const userMessage: ConversationMessage = { role: "user", content: trimmed };
+    const conversationForWebhook = [...messages, userMessage].map(({ role, content }) => ({ role, content }));
+
+    setMessages((prev) => [...prev, userMessage]);
+
+    queryRag(
+      { query: trimmed, history: [...conversationForWebhook] },
+      {
+        onSuccess: (data) => {
+          const assistantMessage: ConversationMessage = {
+            role: "assistant",
+            content: data?.answer || data?.message || "Sin respuesta",
+            sources: data?.sources,
+          };
+          setMessages((prev) => [...prev, assistantMessage]);
+        },
+        onError: () => {
+          // Revert last user message if request fails
+          setMessages((prev) => prev.slice(0, -1));
+        },
+      }
+    );
+
+    setQuery("");
   };
 
   const handleClose = () => {
     setOpen(false);
     setQuery("");
+    setMessages([]);
   };
 
   return (
@@ -109,32 +141,43 @@ export const QueryRagDialog = () => {
             </Button>
           </div>
 
-          {response && (
-            <Card className="bg-muted/50">
-              <CardContent className="pt-6">
-                <div className="space-y-2">
-                  <h4 className="font-semibold text-foreground flex items-center gap-2">
-                    <MessageSquare className="h-4 w-4 text-primary" />
-                    Respuesta del RAG
-                  </h4>
-                  <div className="text-sm text-foreground whitespace-pre-wrap">
-                    {response.answer || response.message || "Sin respuesta"}
-                  </div>
-                  {response.sources && response.sources.length > 0 && (
-                    <div className="mt-4 pt-4 border-t border-border">
-                      <p className="text-xs font-semibold text-muted-foreground mb-2">
-                        Fuentes consultadas:
-                      </p>
-                      <ul className="text-xs text-muted-foreground space-y-1">
-                        {response.sources.map((source: string, idx: number) => (
-                          <li key={idx}>• {source}</li>
-                        ))}
-                      </ul>
+          {messages.length > 0 && (
+            <div className="space-y-3">
+              {messages.map((message, index) => (
+                <Card
+                  key={`${message.role}-${index}-${message.content.slice(0, 10)}`}
+                  className={
+                    message.role === "user"
+                      ? "bg-primary/10 border-primary/30"
+                      : "bg-muted/50"
+                  }
+                >
+                  <CardContent className="pt-6">
+                    <div className="space-y-2">
+                      <h4 className="font-semibold text-foreground flex items-center gap-2">
+                        <MessageSquare className="h-4 w-4 text-primary" />
+                        {message.role === "user" ? "Tú" : "Asistente"}
+                      </h4>
+                      <div className="text-sm text-foreground whitespace-pre-wrap">
+                        {message.content}
+                      </div>
+                      {message.sources && message.sources.length > 0 && (
+                        <div className="mt-4 pt-4 border-t border-border">
+                          <p className="text-xs font-semibold text-muted-foreground mb-2">
+                            Fuentes consultadas:
+                          </p>
+                          <ul className="text-xs text-muted-foreground space-y-1">
+                            {message.sources.map((source, idx) => (
+                              <li key={idx}>• {source}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           )}
         </div>
       </DialogContent>

@@ -3,9 +3,21 @@
 -- ============================================
 
 -- 1. TIPOS ENUM
-CREATE TYPE IF NOT EXISTS public.app_role AS ENUM ('admin', 'lawyer', 'client');
-CREATE TYPE IF NOT EXISTS public.case_status AS ENUM ('new', 'in_progress', 'on_hold', 'resolved', 'closed');
-CREATE TYPE IF NOT EXISTS public.message_status AS ENUM ('sent', 'delivered', 'read', 'failed');
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'app_role') THEN
+    CREATE TYPE public.app_role AS ENUM ('admin', 'lawyer', 'client');
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'case_status') THEN
+    CREATE TYPE public.case_status AS ENUM ('new', 'in_progress', 'pending_review', 'closed', 'archived');
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'message_status') THEN
+    CREATE TYPE public.message_status AS ENUM ('sent', 'delivered', 'read', 'failed');
+  END IF;
+END
+$$;
 
 -- 2. FUNCIONES
 CREATE OR REPLACE FUNCTION public.update_updated_at_column()
