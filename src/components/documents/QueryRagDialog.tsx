@@ -1,3 +1,17 @@
+import { Button } from "@/components/ui/button";
+import { MessageSquare } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
+export const QueryRagDialog = () => {
+  const navigate = useNavigate();
+
+  return (
+    <Button variant="outline" onClick={() => navigate("/rag")}>
+      <MessageSquare className="h-4 w-4 mr-2" />
+      Consultar RAG
+    </Button>
+  );
+};
 import { useMemo, useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";

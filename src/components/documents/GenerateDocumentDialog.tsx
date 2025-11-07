@@ -1,13 +1,25 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Sparkles, FileText, Upload } from "lucide-react";
+import { Sparkles, FileText, ClipboardList } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
 
 export const GenerateDocumentDialog = () => {
   const [open, setOpen] = useState(false);
@@ -22,8 +34,8 @@ export const GenerateDocumentDialog = () => {
 
   // Específico - Crear plantilla
   const [templateForm, setTemplateForm] = useState({
-    name: "",
-    image: null as File | null,
+    templateKey: "",
+    notes: "",
   });
 
   const handleGenerateGeneric = async () => {
@@ -52,7 +64,8 @@ export const GenerateDocumentDialog = () => {
       if (response.ok) {
         toast({
           title: "Documento en proceso",
-          description: "N8N está generando tu documento. Te pedirá los datos necesarios.",
+          description:
+            "N8N está generando tu documento. Te pedirá los datos necesarios.",
         });
         setOpen(false);
         setGenericForm({ documentType: "", description: "" });
@@ -69,20 +82,21 @@ export const GenerateDocumentDialog = () => {
   };
 
   const handleCreateTemplate = async () => {
-    if (!templateForm.image) {
+    const webhookUrl = localStorage.getItem("n8n_generate_document_webhook");
+    if (!webhookUrl) {
       toast({
-        title: "Imagen requerida",
-        description: "Debes subir una imagen de la plantilla",
+        title: "Error de configuración",
+        description:
+          "Configura el webhook de generación de documentos en Configuración",
         variant: "destructive",
       });
       return;
     }
 
-    const visionWebhook = localStorage.getItem("n8n_vision_api_webhook");
-    if (!visionWebhook) {
+    if (!templateForm.templateKey) {
       toast({
-        title: "Error de configuración",
-        description: "Configura el webhook de Vision API en Configuración",
+        title: "Selecciona una plantilla",
+        description: "Elige la plantilla base que deseas utilizar",
         variant: "destructive",
       });
       return;
@@ -90,28 +104,32 @@ export const GenerateDocumentDialog = () => {
 
     setIsGenerating(true);
     try {
-      const formData = new FormData();
-      formData.append("image", templateForm.image);
-      formData.append("templateName", templateForm.name);
-      formData.append("action", "create_template");
-
-      const response = await fetch(`${localStorage.getItem("n8n_base_url")}${visionWebhook}`, {
-        method: "POST",
-        body: formData,
-      });
+      const response = await fetch(
+        `${localStorage.getItem("n8n_base_url")}${webhookUrl}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            type: "template",
+            templateKey: templateForm.templateKey,
+            notes: templateForm.notes,
+          }),
+        }
+      );
 
       if (response.ok) {
         toast({
-          title: "Plantilla en proceso",
-          description: "Vision API está analizando la imagen para extraer campos variables",
+          title: "Plantilla seleccionada",
+          description:
+            "N8N iniciará el diálogo para completar los campos variables y generar el documento.",
         });
         setOpen(false);
-        setTemplateForm({ name: "", image: null });
+        setTemplateForm({ templateKey: "", notes: "" });
       }
     } catch (error) {
       toast({
         title: "Error",
-        description: "No se pudo procesar la plantilla",
+        description: "No se pudo iniciar la generación desde plantilla",
         variant: "destructive",
       });
     } finally {
@@ -142,8 +160,8 @@ export const GenerateDocumentDialog = () => {
               Genérico
             </TabsTrigger>
             <TabsTrigger value="template">
-              <Upload className="h-4 w-4 mr-2" />
-              Desde Plantilla
+              <ClipboardList className="h-4 w-4 mr-2" />
+              Usar Plantilla
             </TabsTrigger>
           </TabsList>
 
@@ -196,45 +214,49 @@ export const GenerateDocumentDialog = () => {
           <TabsContent value="template" className="space-y-4">
             <div className="space-y-4">
               <div>
-                <Label htmlFor="templateName">Nombre de la Plantilla</Label>
-                <Input
-                  id="templateName"
-                  placeholder="Ej: carta_documento_mora"
-                  value={templateForm.name}
-                  onChange={(e) => setTemplateForm({ ...templateForm, name: e.target.value })}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="templateImage">Imagen de la Plantilla</Label>
-                <Input
-                  id="templateImage"
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      setTemplateForm({ ...templateForm, image: file });
-                    }
-                  }}
-                />
+                <Label htmlFor="templateKey">Plantilla disponible</Label>
+                <Select
+                  value={templateForm.templateKey}
+                  onValueChange={(value) =>
+                    setTemplateForm((prev) => ({ ...prev, templateKey: value }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona la plantilla" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="intimacion">Intimación</SelectItem>
+                    <SelectItem value="carta_documento">Carta Documento</SelectItem>
+                    <SelectItem value="demanda">Demanda</SelectItem>
+                    <SelectItem value="contrato">Contrato</SelectItem>
+                    <SelectItem value="poder">Poder</SelectItem>
+                  </SelectContent>
+                </Select>
                 <p className="text-xs text-muted-foreground mt-2">
-                  Sube una imagen del documento. Vision API extraerá los campos variables automáticamente
+                  Las plantillas se obtienen de tu carpeta de Google Drive. N8N se encargará
+                  de solicitar los datos necesarios para completar los campos variables.
                 </p>
               </div>
 
-              {templateForm.image && (
-                <div className="text-sm text-muted-foreground">
-                  Archivo seleccionado: {templateForm.image.name}
-                </div>
-              )}
+              <div>
+                <Label htmlFor="templateNotes">Contexto adicional</Label>
+                <Textarea
+                  id="templateNotes"
+                  placeholder="Agrega instrucciones o información relevante para el documento."
+                  rows={4}
+                  value={templateForm.notes}
+                  onChange={(e) =>
+                    setTemplateForm((prev) => ({ ...prev, notes: e.target.value }))
+                  }
+                />
+              </div>
 
               <Button
                 onClick={handleCreateTemplate}
-                disabled={isGenerating || !templateForm.name || !templateForm.image}
+                disabled={isGenerating || !templateForm.templateKey}
                 className="w-full"
               >
-                {isGenerating ? "Analizando..." : "Crear Plantilla con Vision API"}
+                {isGenerating ? "Procesando..." : "Generar desde plantilla"}
               </Button>
             </div>
           </TabsContent>

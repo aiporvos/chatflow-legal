@@ -156,6 +156,47 @@ CREATE TABLE IF NOT EXISTS public.whatsapp_messages (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS public.rag_sessions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  title TEXT NOT NULL DEFAULT 'Nueva conversación',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS public.rag_messages (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  session_id UUID NOT NULL REFERENCES public.rag_sessions(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  role TEXT NOT NULL CHECK (role IN ('user', 'assistant', 'system')),
+  content TEXT NOT NULL,
+  attachments JSONB DEFAULT '[]'::jsonb,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS public.documents_generated (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  session_id UUID REFERENCES public.rag_sessions(id) ON DELETE SET NULL,
+  document_type TEXT,
+  template_key TEXT,
+  drive_file_id TEXT,
+  drive_file_url TEXT,
+  status TEXT DEFAULT 'pending',
+  metadata JSONB DEFAULT '{}'::jsonb,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS public.drive_folders (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  folder_id TEXT NOT NULL,
+  description TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- 4. HABILITAR RLS
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
@@ -165,6 +206,10 @@ ALTER TABLE public.documents ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.calendar_events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.n8n_webhooks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.whatsapp_messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.rag_sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.rag_messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.documents_generated ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.drive_folders ENABLE ROW LEVEL SECURITY;
 
 -- 5. POLÍTICAS RLS
 -- Profiles
@@ -314,6 +359,38 @@ CREATE POLICY "System can insert messages"
 ON public.whatsapp_messages FOR INSERT
 WITH CHECK (TRUE);
 
+-- RAG Sessions
+DROP POLICY IF EXISTS "Users manage own rag sessions" ON public.rag_sessions;
+CREATE POLICY "Users manage own rag sessions"
+ON public.rag_sessions FOR ALL
+USING (auth.uid() = user_id)
+WITH CHECK (auth.uid() = user_id);
+
+-- RAG Messages
+DROP POLICY IF EXISTS "Users manage own rag messages" ON public.rag_messages;
+CREATE POLICY "Users manage own rag messages"
+ON public.rag_messages FOR ALL
+USING (auth.uid() = user_id)
+WITH CHECK (auth.uid() = user_id);
+
+-- Documents generated
+DROP POLICY IF EXISTS "Users view their generated documents" ON public.documents_generated;
+CREATE POLICY "Users view their generated documents"
+ON public.documents_generated FOR SELECT
+USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users manage their generated documents" ON public.documents_generated;
+CREATE POLICY "Users manage their generated documents"
+ON public.documents_generated FOR ALL
+USING (auth.uid() = user_id)
+WITH CHECK (auth.uid() = user_id);
+
+-- Drive folders (read only from client)
+DROP POLICY IF EXISTS "Anyone can view drive folders" ON public.drive_folders;
+CREATE POLICY "Anyone can view drive folders"
+ON public.drive_folders FOR SELECT
+USING (true);
+
 -- 6. TRIGGERS
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
@@ -354,6 +431,18 @@ CREATE TRIGGER update_n8n_webhooks_updated_at
 DROP TRIGGER IF EXISTS update_whatsapp_messages_updated_at ON public.whatsapp_messages;
 CREATE TRIGGER update_whatsapp_messages_updated_at
   BEFORE UPDATE ON public.whatsapp_messages
+  FOR EACH ROW
+  EXECUTE FUNCTION public.update_updated_at_column();
+
+DROP TRIGGER IF EXISTS update_rag_sessions_updated_at ON public.rag_sessions;
+CREATE TRIGGER update_rag_sessions_updated_at
+  BEFORE UPDATE ON public.rag_sessions
+  FOR EACH ROW
+  EXECUTE FUNCTION public.update_updated_at_column();
+
+DROP TRIGGER IF EXISTS update_documents_generated_updated_at ON public.documents_generated;
+CREATE TRIGGER update_documents_generated_updated_at
+  BEFORE UPDATE ON public.documents_generated
   FOR EACH ROW
   EXECUTE FUNCTION public.update_updated_at_column();
 
