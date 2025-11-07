@@ -12,13 +12,22 @@ export const useUserRole = (userId?: string) => {
       const { data, error } = await supabase
         .from("user_roles")
         .select("role")
-        .eq("user_id", userId)
-        .order("created_at", { ascending: false }) // Obtener el rol más reciente
-        .limit(1)
-        .maybeSingle();
+        .eq("user_id", userId);
 
       if (error) throw error;
-      return data?.role as UserRole | null;
+
+      if (!data || data.length === 0) {
+        return null;
+      }
+
+      const priority: UserRole[] = ["admin", "lawyer", "client"];
+      for (const role of priority) {
+        if (data.some((item) => item.role === role)) {
+          return role;
+        }
+      }
+
+      return (data[0]?.role as UserRole) ?? null;
     },
     enabled: !!userId,
   });
