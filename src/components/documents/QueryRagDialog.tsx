@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -9,6 +9,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useRagQuery, extractRagAnswer } from "@/hooks/useRagQuery";
 import { Link } from "react-router-dom";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 type ConversationMessage = {
   role: "user" | "assistant";
@@ -24,6 +26,56 @@ export const QueryRagDialog = () => {
   const { toast } = useToast();
 
   const isWebhookConfigError = error?.message?.includes("webhook") || error?.message?.includes("Configúralo");
+
+  const markdownComponents = useMemo(
+    () => ({
+      p: ({ children }: { children?: React.ReactNode }) => (
+        <p className="mb-2 last:mb-0 leading-relaxed text-foreground">{children}</p>
+      ),
+      strong: ({ children }: { children?: React.ReactNode }) => (
+        <strong className="font-semibold text-foreground">{children}</strong>
+      ),
+      em: ({ children }: { children?: React.ReactNode }) => (
+        <em className="italic text-foreground/90">{children}</em>
+      ),
+      ul: ({ children }: { children?: React.ReactNode }) => (
+        <ul className="mb-2 space-y-1 list-disc list-inside text-foreground">{children}</ul>
+      ),
+      ol: ({ children }: { children?: React.ReactNode }) => (
+        <ol className="mb-2 space-y-1 list-decimal list-inside text-foreground">{children}</ol>
+      ),
+      li: ({ children }: { children?: React.ReactNode }) => (
+        <li className="pl-1 text-foreground">{children}</li>
+      ),
+      blockquote: ({ children }: { children?: React.ReactNode }) => (
+        <blockquote className="border-l-2 border-primary/40 pl-3 italic text-foreground/90 mb-2">
+          {children}
+        </blockquote>
+      ),
+      code: ({ inline, children }: { inline?: boolean; children?: React.ReactNode }) => (
+        inline ? (
+          <code className="rounded bg-muted px-1 py-0.5 text-xs font-mono text-foreground/90">
+            {children}
+          </code>
+        ) : (
+          <pre className="whitespace-pre-wrap rounded-md bg-muted p-3 text-xs font-mono text-foreground/90">
+            <code>{children}</code>
+          </pre>
+        )
+      ),
+      a: ({ href, children }: { href?: string; children?: React.ReactNode }) => (
+        <a
+          href={href}
+          target="_blank"
+          rel="noreferrer"
+          className="text-primary underline underline-offset-2"
+        >
+          {children}
+        </a>
+      ),
+    }),
+    []
+  );
 
   const handleQuery = () => {
     if (!query.trim()) {
@@ -158,8 +210,17 @@ export const QueryRagDialog = () => {
                         <MessageSquare className="h-4 w-4 text-primary" />
                         {message.role === "user" ? "Tú" : "Asistente"}
                       </h4>
-                      <div className="text-sm text-foreground whitespace-pre-wrap">
-                        {message.content}
+                      <div className="text-sm text-foreground">
+                        {message.role === "assistant" ? (
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            components={markdownComponents}
+                          >
+                            {message.content}
+                          </ReactMarkdown>
+                        ) : (
+                          <p className="whitespace-pre-wrap leading-relaxed">{message.content}</p>
+                        )}
                       </div>
                       {message.sources && message.sources.length > 0 && (
                         <div className="mt-4 pt-4 border-t border-border">
