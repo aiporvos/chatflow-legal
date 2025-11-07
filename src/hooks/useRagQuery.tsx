@@ -22,16 +22,19 @@ export const useRagQuery = () => {
         .from("n8n_webhooks")
         .select("webhook_url, is_active")
         .eq("name", "n8n_rag_query_webhook")
+        .eq("is_active", true)
+        .order("updated_at", { ascending: false, nullsFirst: false })
+        .limit(1)
         .maybeSingle();
 
-      if (webhookError || !webhook?.webhook_url) {
+      if (webhookError) {
+        throw new Error(webhookError.message || "Error obteniendo el webhook RAG");
+      }
+
+      if (!webhook?.webhook_url) {
         throw new Error(
           "No se encontró el webhook de consultas RAG. Configúralo en el panel de administración."
         );
-      }
-
-      if (!webhook.is_active) {
-        throw new Error("El webhook RAG está desactivado. Actívalo para continuar.");
       }
 
       const payload: Record<string, unknown> = { query };
