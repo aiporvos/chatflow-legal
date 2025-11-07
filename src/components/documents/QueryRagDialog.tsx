@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { MessageSquare, Loader2, Settings } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useRagQuery } from "@/hooks/useRagQuery";
+import { useRagQuery, extractRagAnswer } from "@/hooks/useRagQuery";
 import { Link } from "react-router-dom";
 
 type ConversationMessage = {
@@ -45,15 +45,15 @@ export const QueryRagDialog = () => {
       { query: trimmed, history: [...conversationForWebhook] },
       {
         onSuccess: (data) => {
+          const parsed = extractRagAnswer(data);
           const assistantMessage: ConversationMessage = {
             role: "assistant",
-            content: data?.answer || data?.message || "Sin respuesta",
-            sources: data?.sources,
+            content: parsed.text || "Sin respuesta",
+            sources: parsed.sources,
           };
           setMessages((prev) => [...prev, assistantMessage]);
         },
         onError: () => {
-          // Revert last user message if request fails
           setMessages((prev) => prev.slice(0, -1));
         },
       }
